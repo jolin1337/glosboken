@@ -6,6 +6,7 @@ import {
   Button,
   Icon,
   IconButton,
+  IconButtonProps,
 
   Modal,
   ModalOverlay,
