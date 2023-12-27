@@ -141,8 +141,8 @@ export default function Settings() {
                             })
                           }}
                           value={tags}
-                          onChange={(value: Array<{value: string, label: string}>) => {
-                            const newTags = value.filter(v => v.value !== 'newgroup');
+                          onChange={(value) => {
+                            const newTags: Array<{value: string, label: string}> = [...value].filter(v => v.value !== 'newgroup');
                             if (newCandidate && value.find(v => v.value === 'newgroup')) {
                               newTags.push(newCandidate);
                             }
@@ -220,8 +220,8 @@ export default function Settings() {
                         }
                       }
                       value={newTags}
-                      onChange={(value: Array<{value: string, label: string}>) => {
-                        const newTags = value.filter(v => v.value !== 'newgroup');
+                      onChange={(value) => {
+                        const newTags: Array<{value: string, label: string}> = value.filter(v => v.value !== 'newgroup');
                         if (newCandidate && value.find(v => v.value === 'newgroup')) {
                           newTags.push(newCandidate);
                         }

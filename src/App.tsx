@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import {
   ChakraProvider,
   ChakraBaseProvider,
@@ -28,6 +28,8 @@ import { ColorModeSwitcher } from "./ColorModeSwitcher"
 
 import { Glosa } from './types'
 import Settings from './Settings'
+import Stats, {IAnswer} from './Stats';
+import Question from './Question';
 
 const fullTheme = false;
 const myTheme = fullTheme ? extendBaseTheme({
@@ -35,38 +37,6 @@ const myTheme = fullTheme ? extendBaseTheme({
 }) : extendTheme({});
 const MyChakraProvider = fullTheme ? ChakraProvider : ChakraBaseProvider;
 
-
-interface IQuestion {
-  wordPair: Glosa
-  options: Array<Glosa>
-  onAnswer: (answer: Glosa) => void
-}
-
-function Question({wordPair, options, onAnswer}: IQuestion) {
-  const wi1 = Math.random() > 0.5 ? 0 : 1;
-  const wi2 = 1 - wi1;
-  return <>
-    <Heading size="md">What does the word mean: {wordPair.words[wi1]}?</Heading>
-    {options.map((o, i) => (<VStack key={i} spacing={8} align="stretch">
-        <p/>
-        <Button onClick={() => onAnswer(o)}>
-          <Text>{o.words[wi2]}</Text>
-        </Button>
-      </VStack>
-    ))}
-  </>;
-}
-
-interface IStats {
-  answers: Array<{answer: Glosa, glosa: Glosa}>
-  vocab: Array<Glosa>
-}
-function Stats({answers, vocab}: IStats) {
-  const corrects = answers.filter(({answer, glosa}) => answer.words[1] === glosa.words[1] && answer.words[0] === glosa.words[0]);
-  return <>
-    Stats {corrects.length} / {answers.length}
-  </>
-}
 function App() {
   let defaultVocab: Array<Glosa> = [
     {words: ['Jag', 'Ben'], tags: []},
@@ -88,27 +58,24 @@ function App() {
   const [options, setOptions] = useState<undefined | Array<Glosa>>();
   const [currentIndex, setCurrentIndex] = useState<number>(0);
   const [filterTags, setFilterTags] = useState<Array<{label: string, value: string}>>([]);
-  const [answers, setAnswers] = useState<Array<{answer: Glosa, glosa: Glosa}>>([]);
+  const [answers, setAnswers] = useState<Array<IAnswer>>([]);
   const availableTags = Object.keys(vocab.reduce((p, g) => {
     return {
       ...g.tags.reduce((p1, g1) => ({...p1, [g1]: 1}), {}),
       ...p
     }
   }, {})).map(t => ({value: t, label: t}))
-
-  useEffect(() => {
-    window.addEventListener('hashchange', addDelWord);
-    return () => {
-      window.removeEventListener('hashchange', addDelWord);
-    };
-  }, []);
-
-  useEffect(() => {
-    currentIndex < vocab.length && setOptions(getRandomOptions(currentIndex));
-  }, [currentIndex])
-  useEffect(() => {
-    nextWord(-1);
-  }, [filterTags]);
+  const glosaInFilterTags = useCallback((glosa: Glosa) => filterTags.length === 0 || glosa.tags.find(t => filterTags.find(ft => ft.value === t)), [filterTags]);
+  const nextWord = useCallback((i: number) => {
+    let newIndex = i + 1;
+    if (filterTags.length === 0) {
+      setCurrentIndex(newIndex);
+      return newIndex;
+    }
+    while(newIndex < vocab.length && !glosaInFilterTags(vocab[newIndex])) newIndex++;
+    setCurrentIndex(newIndex);
+    return newIndex;
+  }, [vocab, filterTags, glosaInFilterTags]);
 
   const addDelWord = () => {
     const {action, index, value}: {action: string, index?: number, value?: Glosa} = JSON.parse(decodeURI(window.location.hash.slice(1)));
@@ -152,30 +119,35 @@ function App() {
     }
   }
 
-  const getRandomOptions = (i: number) => {
+  const getRandomOptions = useCallback((i: number) => {
     const options = vocab.filter(f => f.words[0] !== vocab[i].words[0]).sort(() => Math.random() - 0.5).slice(4);
     const split = Math.floor(Math.random() * (1 + options.length));
     return options.slice(0, split).concat([vocab[i]]).concat(options.slice(split));
-  };
-  const glosaInFilterTags = (glosa: Glosa) => filterTags.length === 0 || glosa.tags.find(t => filterTags.find(ft => ft.value === t));
-  const nextWord = (i: number) => {
-    let newIndex = i + 1;
-    if (filterTags.length === 0) {
-      setCurrentIndex(newIndex);
-      return newIndex;
-    }
-    while(newIndex < vocab.length && !glosaInFilterTags(vocab[newIndex])) newIndex++;
-    setCurrentIndex(newIndex);
-    return newIndex;
-  }
-  const onAnswer = (answer: Glosa) => {
-    setAnswers([...answers, {answer, glosa: vocab[currentIndex]}]);
+  }, [vocab]);
+  
+  const onAnswer = (answer: Glosa, answerIndex: number) => {
+    setAnswers([...answers, {answer, answerIndex, glosa: vocab[currentIndex]}]);
     const nextIndex = nextWord(currentIndex);
-    console.log(nextIndex);
     if (nextIndex >= vocab.length) {
       console.log(answers);
     }
   };
+
+
+
+  useEffect(() => {
+    window.addEventListener('hashchange', addDelWord);
+    return () => {
+      window.removeEventListener('hashchange', addDelWord);
+    };
+  }, []);
+
+  useEffect(() => {
+    currentIndex < vocab.length && setOptions(getRandomOptions(currentIndex));
+  }, [currentIndex, vocab, getRandomOptions])
+  useEffect(() => {
+    nextWord(-1);
+  }, [nextWord, filterTags]);
 
   return <MyChakraProvider theme={myTheme}>
     <Box textAlign="center" fontSize="xl">
@@ -185,14 +157,14 @@ function App() {
           <ColorModeSwitcher />
         </Box>
         <Card align="center">
-        <CardHeader align="center">
+        <CardHeader>
           <Heading size="xl">Quiz</Heading>
           <Select
             placeholder="Choose wordgroups"
             size="md"
             isMulti 
             value={filterTags}
-            onChange={setFilterTags}
+            onChange={(v) => setFilterTags([...v])}
             options={[...availableTags]}
           />
           <Text>{currentIndex < vocab.length && <>Answer the question below (question {currentIndex + 1 - (vocab.length - vocab.filter((v, i) => glosaInFilterTags(v) || i > currentIndex).length)} out of {vocab.filter(glosaInFilterTags).length})</>}</Text>
