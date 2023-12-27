@@ -1,5 +1,4 @@
-import { useState, useEffect, FormEvent, ChangeEvent } from 'react'
-import {Input} from '@chakra-ui/react'
+import { useState, useEffect } from 'react'
 import {
   ChakraProvider,
   ChakraBaseProvider,
@@ -18,32 +17,17 @@ import {
   Heading,
   Text,
   Button,
-  Icon,
-  IconButton,
 } from "@chakra-ui/react"
+import {
+  Select,
+} from "chakra-react-select";
 
-import {
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalHeader,
-  ModalFooter,
-  ModalBody,
-  ModalCloseButton,
-  useDisclosure,
-} from "@chakra-ui/react"
-import {
-  Table,
-  Thead,
-  Tbody,
-  Tr,
-  Th,
-  Td,
-  TableContainer,
-} from '@chakra-ui/react'
+
 import {theme as chakraTheme} from '@chakra-ui/theme'
 import { ColorModeSwitcher } from "./ColorModeSwitcher"
-import { FiSettings, FiPlus, FiEdit, FiTrash } from "react-icons/fi";
+
+import { Glosa } from './types'
+import Settings from './Settings'
 
 const fullTheme = false;
 const myTheme = fullTheme ? extendBaseTheme({
@@ -52,8 +36,6 @@ const myTheme = fullTheme ? extendBaseTheme({
 const MyChakraProvider = fullTheme ? ChakraProvider : ChakraBaseProvider;
 
 
-type Glosa = [string, string];
-
 interface IQuestion {
   wordPair: Glosa
   options: Array<Glosa>
@@ -61,12 +43,14 @@ interface IQuestion {
 }
 
 function Question({wordPair, options, onAnswer}: IQuestion) {
+  const wi1 = Math.random() > 0.5 ? 0 : 1;
+  const wi2 = 1 - wi1;
   return <>
-    <Heading size="md">Vad betyder ordet: {wordPair[0]}?</Heading>
+    <Heading size="md">What does the word mean: {wordPair.words[wi1]}?</Heading>
     {options.map((o, i) => (<VStack key={i} spacing={8} align="stretch">
         <p/>
         <Button onClick={() => onAnswer(o)}>
-          <Text>{o[1]}</Text>
+          <Text>{o.words[wi2]}</Text>
         </Button>
       </VStack>
     ))}
@@ -74,153 +58,26 @@ function Question({wordPair, options, onAnswer}: IQuestion) {
 }
 
 interface IStats {
-  answers: Array<Glosa>
+  answers: Array<{answer: Glosa, glosa: Glosa}>
   vocab: Array<Glosa>
 }
 function Stats({answers, vocab}: IStats) {
-  const corrects = answers.filter((a, i) => a[1] === vocab[i][1]);
+  const corrects = answers.filter(({answer, glosa}) => answer.words[1] === glosa.words[1] && answer.words[0] === glosa.words[0]);
   return <>
     Stats {corrects.length} / {answers.length}
   </>
 }
-
-function Settings() {
-  const { isOpen, onOpen, onClose } = useDisclosure();
-  const staticVocab = JSON.parse(window.localStorage.getItem('vocab') || '');
-  const [vocab, setVocab] = useState(staticVocab);
-  const [editRow, setEditRow] = useState<number | undefined>();
-  const [word1, setWord1] = useState<string>('');
-  const [word2, setWord2] = useState<string>('');
-  const [newWord1, setNewWord1] = useState<string>('');
-  const [newWord2, setNewWord2] = useState<string>('');
-
-  const updateVocab = () => {
-    setTimeout(() => {
-      const staticVocab = JSON.parse(window.localStorage.getItem('vocab') || '');
-      setEditRow(-1);
-      setWord1('');
-      setWord2('');
-      setNewWord1('');
-      setNewWord2('');
-      setVocab(staticVocab);
-    }, 500);
-  }
-  useEffect(() => {
-    window.addEventListener('hashchange', updateVocab);
-    return () => {
-      window.removeEventListener('hashchange', updateVocab);
-    };
-  }, []);
-
-  return <>
-     <IconButton
-      size="md"
-      fontSize="lg"
-      variant="ghost"
-      color="current"
-      marginLeft="2"
-      onClick={onOpen}
-      icon={<Icon as={FiSettings} />}
-      aria-label={`Settings`}
-    />
-
-    <Modal isOpen={isOpen} onClose={onClose} size="xl">
-      <ModalOverlay />
-      <ModalContent>
-        <ModalHeader>Vocabulary</ModalHeader>
-        <ModalCloseButton />
-        <ModalBody>
-          <TableContainer>
-            <Table variant='simple'>
-              <Thead>
-                <Tr>
-                  <Th>Word to translate</Th>
-                  <Th>Correct transaltion</Th>
-                  <Th>Actions</Th>
-                </Tr>
-              </Thead>
-              <Tbody>
-                {vocab.map((g: Glosa, i: number) => (
-                  <Tr key={i}>
-                    {i !== editRow && <Td><Text>{g[0]}</Text></Td>}
-                    {i !== editRow && <Td><Text>{g[1]}</Text></Td>}
-                    {i === editRow && <Td><Input value={word1} onChange={(e: ChangeEvent<HTMLInputElement>) => setWord1(e.target?.value)} variant='filled' /></Td>}
-                    {i === editRow && <Td><Input value={word2} onChange={(e: ChangeEvent<HTMLInputElement>) => setWord2(e.target?.value)} variant='filled' /></Td>}
-                    <Td>
-                      {editRow === i && <IconButton
-                        size="md"
-                        fontSize="lg"
-                        variant="ghost"
-                        color="current"
-                        marginLeft="2"
-                        onClick={() => {window.location.hash = i.toString();}}
-                        icon={<Icon as={FiTrash} />}
-                        aria-label={`Settings`}
-                      />}
-                      <IconButton
-                        size="md"
-                        fontSize="lg"
-                        variant="ghost"
-                        color="current"
-                        marginLeft="2"
-                        onClick={() => {
-                          if (i === editRow) {
-                            setEditRow(-1);
-                            window.location.hash = `${word1}=${word2}=${i}`;
-                          } else {
-                            setEditRow(i);
-                            setWord1(g[0]);
-                            setWord2(g[1]);
-                          }
-                        }}
-                        icon={<Icon as={FiEdit} />}
-                        aria-label={`Settings`}
-                      />
-                    </Td>
-                  </Tr>
-                ))} 
-                <Tr>
-                  <Td><Input value={newWord1} onChange={(e: ChangeEvent<HTMLInputElement>) => setNewWord1(e.target.value)} variant='filled' /></Td>
-                  <Td><Input value={newWord2} onChange={(e: ChangeEvent<HTMLInputElement>) => setNewWord2(e.target.value)} variant='filled' /></Td>
-                  <Td>
-                    <IconButton
-                      size="md"
-                      fontSize="lg"
-                      variant="ghost"
-                      color="current"
-                      marginLeft="2"
-                      onClick={() => {window.location.hash = `${newWord1}=${newWord2}`;}}
-                      icon={<Icon as={FiPlus} />}
-                      aria-label={`Settings`}
-                    />
-                  </Td>
-                </Tr>
-              </Tbody>
-            </Table>
-          </TableContainer>
-        </ModalBody>
-
-        <ModalFooter>
-          <Button colorScheme='blue' mr={3} onClick={onClose}>
-            Close
-          </Button>
-        </ModalFooter>
-      </ModalContent>
-    </Modal>
-  </>;
-}
-
 function App() {
   let defaultVocab: Array<Glosa> = [
-    ['Jag', 'Ben'],
-    ['Du', 'Sen'],
-    ['Han/Hon', 'O'],
-    ['Vi', 'Biz'],
-    ['Dem', 'Siz'],
-    ['Dricka', 'Icer'],
-    ['Äta', 'yer'],
-    ['Vatten', 'Su'],
-    ['Mjölk', 'Sut'],
+    {words: ['Jag', 'Ben'], tags: []},
+    {words: ['Du', 'Sen'], tags: []},
+    {words: ['Han/Hon', 'O'], tags: []},
+    {words: ['Vi', 'Biz'], tags: []},
+    {words: ['Dem', 'Siz'], tags: []},
+    {words: ['Dricka', 'Icer'], tags: []},
+    {words: ['Äta', 'yer'], tags: []},
+    {words: ['Vatten', 'Su'], tags: []},
+    {words: ['Mjölk', 'Sut'], tags: []},
   ];
   if (window.localStorage.getItem('vocab')?.trim()) {
     defaultVocab = JSON.parse(window.localStorage.getItem('vocab') || '');
@@ -230,7 +87,14 @@ function App() {
   const [vocab, setVocab] = useState(defaultVocab);
   const [options, setOptions] = useState<undefined | Array<Glosa>>();
   const [currentIndex, setCurrentIndex] = useState<number>(0);
-  const [answers, setAnswers] = useState<Array<Glosa>>([]);
+  const [filterTags, setFilterTags] = useState<Array<{label: string, value: string}>>([]);
+  const [answers, setAnswers] = useState<Array<{answer: Glosa, glosa: Glosa}>>([]);
+  const availableTags = Object.keys(vocab.reduce((p, g) => {
+    return {
+      ...g.tags.reduce((p1, g1) => ({...p1, [g1]: 1}), {}),
+      ...p
+    }
+  }, {})).map(t => ({value: t, label: t}))
 
   useEffect(() => {
     window.addEventListener('hashchange', addDelWord);
@@ -242,53 +106,75 @@ function App() {
   useEffect(() => {
     currentIndex < vocab.length && setOptions(getRandomOptions(currentIndex));
   }, [currentIndex])
+  useEffect(() => {
+    nextWord(-1);
+  }, [filterTags]);
 
   const addDelWord = () => {
-    const word = window.location.hash.slice(1).split('=', 3);
+    const {action, index, value}: {action: string, index?: number, value?: Glosa} = JSON.parse(decodeURI(window.location.hash.slice(1)));
     const vocab = JSON.parse(window.localStorage.getItem('vocab') || '');
+    
     if (
-      word.length == 3 && 
-      word[0].trim().length > 0 && 
-      word[1].trim().length > 0 && 
-      !isNaN(Number(word[2]))
+      action === 'replace' && 
+      value && (
+        value.words[0].trim().length > 0 && 
+        value.words[1].trim().length > 0
+      ) && 
+      index !== undefined && index >= 0 && index < vocab.length
     ) {
-      const newWord: Glosa = [word[0].trim(), word[1].trim()];
-      const n = parseInt(word[2]);
-      if (n >= 0 && n < vocab.length) {
-        const newVocab = [...vocab];
-        newVocab.splice(n, 1, newWord);
-        setVocab(newVocab);
-        window.localStorage.setItem('vocab', JSON.stringify(newVocab));
-      }
+      const newWord: Glosa = {words: [value.words[0].trim(), value.words[1].trim()], tags: value.tags};
+      const newVocab = [...vocab];
+      newVocab.splice(index, 1, newWord);
+      setVocab(newVocab);
+      console.log("Setting new vocab");
+      window.localStorage.setItem('vocab', JSON.stringify(newVocab));
     } else if (
-      word.length == 2 && 
-      word[0].trim().length > 0 && 
-      word[1].trim().length > 0
+      action === 'create' && 
+      value && (
+        value.words[0].trim().length > 0 && 
+        value.words[1].trim().length > 0
+      )
     ) {
-      const newWord: Glosa = [word[0].trim(), word[1].trim()];
-      const exits = vocab.find((w: Glosa) => w[0] === newWord[0] && w[1] === newWord[1].trim());
+      const newWord: Glosa = {words: [value.words[0].trim(), value.words[1].trim()], tags: value.tags};
+      const exits = vocab.find((w: Glosa) => w.words[0] === newWord.words[0] && w.words[1] === newWord.words[1].trim());
       if (!exits) {
         setVocab([...vocab, newWord]);
+        console.log("Setting new vocab");
         window.localStorage.setItem('vocab', JSON.stringify([...vocab, newWord]));
+      } else {
+        console.warn("New word already exists, skipping")
       }
-    } else if (word.length === 1 && !isNaN(Number(word[0]))) {
-      const n = parseInt(word[0]);
-      if (n >= 0 && n < vocab.length) {
-        const newVocab = vocab.slice(0, n).concat(vocab.slice(n + 1));
-        setVocab(newVocab);
-        window.localStorage.setItem('vocab', JSON.stringify(newVocab));
-      }
+    } else if (action === 'delete' && index !== undefined && index >= 0 && index < vocab.length) {
+      const newVocab = vocab.slice(0, index).concat(vocab.slice(index + 1));
+      setVocab(newVocab);
+      console.log("Setting new vocab");
+      window.localStorage.setItem('vocab', JSON.stringify(newVocab));
     }
   }
 
   const getRandomOptions = (i: number) => {
-    const options = vocab.filter(f => f[0] !== vocab[i][0]).sort(() => Math.random() - 0.5).slice(4);
+    const options = vocab.filter(f => f.words[0] !== vocab[i].words[0]).sort(() => Math.random() - 0.5).slice(4);
     const split = Math.floor(Math.random() * (1 + options.length));
     return options.slice(0, split).concat([vocab[i]]).concat(options.slice(split));
   };
+  const glosaInFilterTags = (glosa: Glosa) => filterTags.length === 0 || glosa.tags.find(t => filterTags.find(ft => ft.value === t));
+  const nextWord = (i: number) => {
+    let newIndex = i + 1;
+    if (filterTags.length === 0) {
+      setCurrentIndex(newIndex);
+      return newIndex;
+    }
+    while(newIndex < vocab.length && !glosaInFilterTags(vocab[newIndex])) newIndex++;
+    setCurrentIndex(newIndex);
+    return newIndex;
+  }
   const onAnswer = (answer: Glosa) => {
-    setAnswers([...answers, answer]);
-    setCurrentIndex(currentIndex + 1);
+    setAnswers([...answers, {answer, glosa: vocab[currentIndex]}]);
+    const nextIndex = nextWord(currentIndex);
+    console.log(nextIndex);
+    if (nextIndex >= vocab.length) {
+      console.log(answers);
+    }
   };
 
   return <MyChakraProvider theme={myTheme}>
@@ -301,11 +187,22 @@ function App() {
         <Card align="center">
         <CardHeader align="center">
           <Heading size="xl">Quiz</Heading>
-          <Text>{currentIndex < vocab.length && <>Svara på frågan nedan (fråga {currentIndex + 1} av {vocab.length})</>}</Text>
+          <Select
+            placeholder="Choose wordgroups"
+            size="md"
+            isMulti 
+            value={filterTags}
+            onChange={setFilterTags}
+            options={[...availableTags]}
+          />
+          <Text>{currentIndex < vocab.length && <>Answer the question below (question {currentIndex + 1 - (vocab.length - vocab.filter((v, i) => glosaInFilterTags(v) || i > currentIndex).length)} out of {vocab.filter(glosaInFilterTags).length})</>}</Text>
         </CardHeader>
           <CardBody>
             {options && currentIndex < vocab.length && <Question wordPair={vocab[currentIndex]} options={options} onAnswer={onAnswer} />}
-            {currentIndex >= vocab.length && <Stats answers={answers} vocab={vocab}/>}
+            {currentIndex >= vocab.length && (<VStack>
+              <Stats answers={answers} vocab={vocab}/>
+              <Button onClick={() => nextWord(-1)}>Restart quiz</Button>
+            </VStack>)}
           </CardBody>
         </Card>
       </Grid>
