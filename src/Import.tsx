@@ -1,8 +1,6 @@
-import { useState, useEffect, ChangeEvent } from 'react'
-import {Input} from '@chakra-ui/react'
+import { useState } from 'react'
 import {
-  Text,
-  Tag,
+  Input,
   Button,
   Icon,
   IconButton,
