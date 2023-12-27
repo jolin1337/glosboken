@@ -41,8 +41,7 @@ export default function Stats({answers}: IStats) {
       return unique.reduce((p, c) => [...p, ...c], []);
     })
   );
-  const worstWords = [...unique].sort((a, b) => b.length - a.length);
-  console.log(worstWords);
+  const worstWords = [...unique].sort((a, b) => a.length - b.length).slice(0, 5);
   return <VStack>
     <Text>Overall performance {corrects.length} / {answers.length}</Text>
     <Text>Latest quiz {unique.filter(c => isCorrect(c[0])).length} / {unique.length}</Text>

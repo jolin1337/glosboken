@@ -30,6 +30,7 @@ import { Glosa } from './types'
 import Settings from './Settings'
 import Stats, {IAnswer} from './Stats';
 import Question from './Question';
+import Import from './Import';
 
 const fullTheme = false;
 const myTheme = fullTheme ? extendBaseTheme({
@@ -39,15 +40,15 @@ const MyChakraProvider = fullTheme ? ChakraProvider : ChakraBaseProvider;
 
 function App() {
   let defaultVocab: Array<Glosa> = [
-    {words: ['Jag', 'Ben'], tags: []},
-    {words: ['Du', 'Sen'], tags: []},
-    {words: ['Han/Hon', 'O'], tags: []},
-    {words: ['Vi', 'Biz'], tags: []},
-    {words: ['Dem', 'Siz'], tags: []},
-    {words: ['Dricka', 'Icer'], tags: []},
-    {words: ['Äta', 'yer'], tags: []},
-    {words: ['Vatten', 'Su'], tags: []},
-    {words: ['Mjölk', 'Sut'], tags: []},
+    {words: ['I', 'Ben'], tags: ['Pronom']},
+    {words: ['You (singular)', 'Sen'], tags: ['Pronom']},
+    {words: ['He/She/It', 'O'], tags: ['Pronom']},
+    {words: ['We', 'Biz'], tags: ['Pronom']},
+    {words: ['You (plural)', 'Siz'], tags: ['Pronom']},
+    {words: ['Drink', 'Icer'], tags: ['Verb']},
+    {words: ['Eat', 'yer'], tags: ['Verb']},
+    {words: ['Water', 'Su'], tags: ['Substantive']},
+    {words: ['Milk', 'Sut'], tags: ['Substantive']},
   ];
   if (window.localStorage.getItem('vocab')?.trim()) {
     defaultVocab = JSON.parse(window.localStorage.getItem('vocab') || '');
@@ -154,6 +155,7 @@ function App() {
       <Grid minH="100vh" p={3}>
         <Box justifySelf="flex-end">
           <Settings />
+          <Import />
           <ColorModeSwitcher />
         </Box>
         <Card align="center">
