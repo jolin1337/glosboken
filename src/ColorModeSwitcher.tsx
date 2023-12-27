@@ -1,4 +1,5 @@
 import {
+  Text,
   useColorMode,
   useColorModeValue,
   IconButton,
@@ -14,7 +15,7 @@ export const ColorModeSwitcher = forwardRef((props: ColorModeSwitcherProps, ref)
   const text = useColorModeValue("dark", "light")
   const SwitchIcon = useColorModeValue(FaMoon, FaSun)
 
-  return (
+  return (<Text onClick={toggleColorMode}>
     <IconButton
       ref={ref}
       size="md"
@@ -22,10 +23,9 @@ export const ColorModeSwitcher = forwardRef((props: ColorModeSwitcherProps, ref)
       variant="ghost"
       color="current"
       marginLeft="2"
-      onClick={toggleColorMode}
       icon={<SwitchIcon />}
       aria-label={`Switch to ${text} mode`}
       {...props}
     />
-  )
+  </Text>)
 });

@@ -5,6 +5,7 @@ import {
   Icon,
   IconButton,
   IconButtonProps,
+  Text,
 
   Modal,
   ModalOverlay,
@@ -71,18 +72,19 @@ const Import = forwardRef((props: ImportProps, ref: ForwardedRef<HTMLButtonEleme
     }
   }
   return (<>
-    <IconButton
-      ref={ref}
-      size="md"
-      fontSize="lg"
-      variant="ghost"
-      color="current"
-      marginLeft="2"
-      onClick={onOpen}
-      icon={<Icon as={CiImport} />}
-      aria-label={`Settings`}
-      {...props}
-    />
+    <Text onClick={onOpen}>
+      <IconButton
+        ref={ref}
+        size="md"
+        fontSize="lg"
+        variant="ghost"
+        color="current"
+        marginLeft="2"
+        icon={<Icon as={CiImport} />}
+        aria-label={`Settings`}
+        {...props}
+      />
+    </Text>
 
     <Modal isOpen={isOpen} onClose={onClose} size="5xl">
       <ModalOverlay />

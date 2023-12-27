@@ -85,18 +85,19 @@ export default forwardRef(function Settings(props: SettingsProps, ref: Forwarded
   }, []);
 
   return <>
+    <Text onClick={onOpen}>
      <IconButton
-      ref={ref}
-      {...props}
-      size="md"
-      fontSize="lg"
-      variant="ghost"
-      color="current"
-      marginLeft="2"
-      onClick={onOpen}
-      icon={<Icon as={FiSettings} />}
-      aria-label={`Settings`}
-    />
+       ref={ref}
+       {...props}
+       size="md"
+       fontSize="lg"
+       variant="ghost"
+       color="current"
+       marginLeft="2"
+       icon={<Icon as={FiSettings} />}
+       aria-label={`Settings`}
+     />
+    </Text>
 
     <Modal isOpen={isOpen} onClose={onClose} size="5xl">
       <ModalOverlay />

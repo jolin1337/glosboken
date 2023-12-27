@@ -5,6 +5,7 @@ import {
   extendBaseTheme,
   extendTheme,
   VStack,
+  HStack,
   Box,
   Grid,
 } from "@chakra-ui/react"
@@ -179,19 +180,21 @@ function App() {
     <Box textAlign="center" fontSize="xl">
       <Grid minH="100vh" p={3}>
         <Box justifySelf="flex-end">
-          <Tooltip hasArrow placement="bottom-end" label="Open Settings to modify current vocabulary"><Settings /></Tooltip>
-          <Tooltip hasArrow placement="bottom-end" label="Import a vocabulary from URL"><Import /></Tooltip>
-          <Tooltip hasArrow placement="bottom-end" label="Export current selected vocabulary"><IconButton
-            size="md"
-            fontSize="lg"
-            variant="ghost"
-            color="current"
-            marginLeft="2"
-            onClick={() => {window.location.hash = JSON.stringify(vocab.filter(glosaInFilterTags));}}
-            icon={<Icon as={CiExport} />}
-            aria-label={`Settings`}
-          /></Tooltip>
-          <Tooltip hasArrow placement="bottom-end" label="Change color theme"><ColorModeSwitcher /></Tooltip>
+          <HStack>
+            <Tooltip hasArrow placement="bottom-end" label="Open Settings to modify current vocabulary"><Settings /></Tooltip>
+            <Tooltip hasArrow placement="bottom-end" label="Import a vocabulary from URL"><Import /></Tooltip>
+            <Tooltip hasArrow placement="bottom-end" label="Export current selected vocabulary"><IconButton
+              size="md"
+              fontSize="lg"
+              variant="ghost"
+              color="current"
+              marginLeft="2"
+              onClick={() => {window.location.hash = JSON.stringify(vocab.filter(glosaInFilterTags));}}
+              icon={<Icon as={CiExport} />}
+              aria-label={`Settings`}
+            /></Tooltip>
+            <Tooltip hasArrow placement="bottom-end" label="Change color theme"><ColorModeSwitcher /></Tooltip>
+          </HStack>
         </Box>
         <Card align="center">
         <CardHeader style={{minWidth: 450}}>
