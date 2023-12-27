@@ -1,0 +1,11 @@
+[
+  {"words": ["I", "Ben"], "tags": ["Pronom"]},
+  {"words": ["You (singular)", "Sen"], "tags": ["Pronom"]},
+  {"words": ["He/She/It", "O"], "tags": ["Pronom"]},
+  {"words": ["We", "Biz"], "tags": ["Pronom"]},
+  {"words": ["You (plural)", "Siz"], "tags": ["Pronom"]},
+  {"words": ["Drink", "Icer"], "tags": ["Verb"]},
+  {"words": ["Eat", "yer"], "tags": ["Verb"]},
+  {"words": ["Water", "Su"], "tags": ["Substantive"]},
+  {"words": ["Milk", "Sut"], "tags": ["Substantive"]}
+]

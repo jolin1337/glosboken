@@ -1,0 +1,11 @@
+[
+  {"words": ["Jag", "Ben"], "tags": ["Pronom"]},
+  {"words": ["Du", "Sen"], "tags": ["Pronom"]},
+  {"words": ["Han/Hon/Det", "O"], "tags": ["Pronom"]},
+  {"words": ["Vi", "Biz"], "tags": ["Pronom"]},
+  {"words": ["Ni", "Siz"], "tags": ["Pronom"]},
+  {"words": ["Dricka", "Icer"], "tags": ["Verb"]},
+  {"words": ["Äta", "yer"], "tags": ["Verb"]},
+  {"words": ["Vatten", "Su"], "tags": ["Substantive"]},
+  {"words": ["Mjölk", "Sut"], "tags": ["Substantive"]}
+]

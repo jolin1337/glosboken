@@ -1,9 +1,10 @@
-import { useState } from 'react'
+import { ForwardedRef, forwardRef, useState } from 'react'
 import {
   Input,
   Button,
   Icon,
   IconButton,
+  IconButtonProps,
 
   Modal,
   ModalOverlay,
@@ -24,7 +25,9 @@ import { CiImport } from "react-icons/ci";
 
 import { Glosa } from './types';
 
-const Import = () => {
+type ImportProps = Omit<IconButtonProps, "aria-label">
+
+const Import = forwardRef((props: ImportProps, ref: ForwardedRef<HTMLButtonElement>) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [tags, setTags] = useState<Array<{label: string, value: string}>>([]);
   const [url, setUrl] = useState<string>('');
@@ -69,6 +72,7 @@ const Import = () => {
   }
   return (<>
     <IconButton
+      ref={ref}
       size="md"
       fontSize="lg"
       variant="ghost"
@@ -77,6 +81,7 @@ const Import = () => {
       onClick={onOpen}
       icon={<Icon as={CiImport} />}
       aria-label={`Settings`}
+      {...props}
     />
 
     <Modal isOpen={isOpen} onClose={onClose} size="5xl">
@@ -122,6 +127,6 @@ const Import = () => {
       </ModalContent>
     </Modal>
   </>);
-};
+});
 
 export default Import;

@@ -1,4 +1,4 @@
-import { useState, useEffect, ChangeEvent } from 'react'
+import { useState, useEffect, ChangeEvent, forwardRef, ForwardedRef } from 'react'
 import {Input} from '@chakra-ui/react'
 import {
   Text,
@@ -30,12 +30,16 @@ import { FiSettings, FiPlus, FiEdit, FiTrash } from "react-icons/fi";
 import {
   Select,
 } from "chakra-react-select";
+const vocabularyModules = import.meta.glob('./assets/vocabulary/*.json', {import: 'default'});
 
 import { Glosa } from './types'
 
-export default function Settings() {
+type SettingsProps = Omit<IconButtonProps, "aria-label">;
+
+export default forwardRef(function Settings(props: SettingsProps, ref: ForwardedRef<HTMLButtonElement>) {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const staticVocab = JSON.parse(window.localStorage.getItem('vocab') || '');
+  const [vocabularies, setVocabularies] = useState<Array<{label: string, value: {[k: string]: Array<Glosa>}}>>([]);
   const [vocab, setVocab] = useState<Array<Glosa>>(staticVocab);
   const [editRow, setEditRow] = useState<number | undefined>();
   const [word1, setWord1] = useState<string>('');
@@ -68,6 +72,12 @@ export default function Settings() {
   }
   useEffect(() => {
     window.addEventListener('hashchange', updateVocab);
+    (async () => {
+      const vocabNames = Object.keys(vocabularyModules);
+      const vocabs = (await Promise.all(vocabNames.map(vm => vocabularyModules[vm]()))) as Array<{[key: string]: Array<Glosa>}>;
+      console.log(vocabs);
+      setVocabularies(vocabs.map((value, i) => ({label: vocabNames[i].split('/').slice(-1)[0].split('.')[0], value})));
+    })()
     return () => {
       window.removeEventListener('hashchange', updateVocab);
     };
@@ -75,6 +85,8 @@ export default function Settings() {
 
   return <>
      <IconButton
+      ref={ref}
+      {...props}
       size="md"
       fontSize="lg"
       variant="ghost"
@@ -91,6 +103,14 @@ export default function Settings() {
         <ModalHeader>Vocabulary</ModalHeader>
         <ModalCloseButton />
         <ModalBody>
+          <Select
+            placeholder="Premade vocabularies"
+            onChange={(selection) => {
+              if (!selection) return;
+              window.location.hash = JSON.stringify(selection.value);
+            }}
+            options={vocabularies}
+          />
           <TableContainer overflowY="auto">
             <Table variant='simple'>
               <Thead>
@@ -265,6 +285,6 @@ export default function Settings() {
       </ModalContent>
     </Modal>
   </>;
-}
+})
 
 

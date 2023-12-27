@@ -17,10 +17,16 @@ import {
   Heading,
   Text,
   Button,
+  Image,
+  Icon,
+  IconButton,
+  Tooltip,
 } from "@chakra-ui/react"
 import {
   Select,
 } from "chakra-react-select";
+import { CiExport } from "react-icons/ci";
+import vocabIcon from './assets/vocab-logo.png?inline';
 
 
 import {theme as chakraTheme} from '@chakra-ui/theme'
@@ -37,6 +43,12 @@ const myTheme = fullTheme ? extendBaseTheme({
   Button: chakraTheme.components.Button
 }) : extendTheme({});
 const MyChakraProvider = fullTheme ? ChakraProvider : ChakraBaseProvider;
+
+
+function assert(b: boolean) {
+  if (b) return;
+  throw "Assert failed";
+}
 
 function App() {
   let defaultVocab: Array<Glosa> = [
@@ -79,7 +91,8 @@ function App() {
   }, [vocab, filterTags, glosaInFilterTags]);
 
   const addDelWord = () => {
-    const {action, index, value}: {action: string, index?: number, value?: Glosa} = JSON.parse(decodeURI(window.location.hash.slice(1)));
+    const hash = JSON.parse(decodeURI(window.location.hash.slice(1)));
+    const {action, index, value}: {action: string, index?: number, value?: Glosa} = hash;
     const vocab = JSON.parse(window.localStorage.getItem('vocab') || '');
     
     if (
@@ -117,6 +130,18 @@ function App() {
       setVocab(newVocab);
       console.log("Setting new vocab");
       window.localStorage.setItem('vocab', JSON.stringify(newVocab));
+    } else if (!action) {
+      assert(hash.length > 0);
+      hash.forEach((item: Glosa) => {
+        assert(!!item.words);
+        assert(item.words.length === 2);
+        assert(item.words[0].trim().length > 0);
+        assert(item.words[1].trim().length > 0);
+        assert(!!item.tags);
+        assert(item.tags.length !== undefined);
+      });
+      window.localStorage.setItem('vocab', JSON.stringify(hash));
+      setVocab(hash);
     }
   }
 
@@ -154,13 +179,26 @@ function App() {
     <Box textAlign="center" fontSize="xl">
       <Grid minH="100vh" p={3}>
         <Box justifySelf="flex-end">
-          <Settings />
-          <Import />
-          <ColorModeSwitcher />
+          <Tooltip hasArrow placement="bottom-end" label="Open Settings to modify current vocabulary"><Settings /></Tooltip>
+          <Tooltip hasArrow placement="bottom-end" label="Import a vocabulary from URL"><Import /></Tooltip>
+          <Tooltip hasArrow placement="bottom-end" label="Export current selected vocabulary"><IconButton
+            size="md"
+            fontSize="lg"
+            variant="ghost"
+            color="current"
+            marginLeft="2"
+            onClick={() => {window.location.hash = JSON.stringify(vocab.filter(glosaInFilterTags));}}
+            icon={<Icon as={CiExport} />}
+            aria-label={`Settings`}
+          /></Tooltip>
+          <Tooltip hasArrow placement="bottom-end" label="Change color theme"><ColorModeSwitcher /></Tooltip>
         </Box>
         <Card align="center">
-        <CardHeader>
-          <Heading size="xl">Quiz</Heading>
+        <CardHeader style={{minWidth: 450}}>
+          <Heading size="xl">
+            <Image width={100} style={{float: 'left', margin: '0 -90px 10px 10px'}} src={vocabIcon}/>
+            <Text style={{paddingTop: 60}}>ocabulary Quiz</Text>
+          </Heading>
           <Select
             placeholder="Choose wordgroups"
             size="md"
